@@ -1,5 +1,5 @@
 process CELLPOSE {
-    container { task && task.ext.container ?: 'janeliascicomp/cellpose:3.1.0-dask2025.1.0-py12' }
+    container { task && task.ext.container ?: 'ghcr.io/janeliascicomp/cellpose:4.0.6-dask2025.5.1-py12' }
     cpus { cellpose_cpus }
     memory "${cellpose_mem_in_gb} GB"
     conda 'modules/janelia/cellpose/conda-env.yml'
@@ -21,8 +21,12 @@ process CELLPOSE {
     val(cellpose_mem_in_gb)
 
     output:
-    tuple val(meta), env(input_image_fullpath), val(image_subpath), env(output_segmentation_results), labels_subpath, emit: results
-    path('versions.yml')                                                                                            , emit: versions
+    tuple val(meta),
+          env(input_image_fullpath),
+          val(image_subpath),
+          eval('(IFS=$"\n"; echo "${output_label_images[@]}")'),
+          val(labels_subpath)                                  , emit: results
+    path('versions.yml')                                       , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -85,9 +89,9 @@ process CELLPOSE {
     echo "CMD: \${CMD[@]}"
     (exec "\${CMD[@]}")
 
-    output_segmentation_results=()
+    output_label_images=()
     for sr in \$(ls \${output_fullpath} | grep "${labels_noext}.*${labels_ext}") ; do
-        output_segmentation_results+=("\${output_fullpath}/\${sr}")
+        output_label_images+=("\${output_fullpath}/\${sr}")
     done
 
     cellpose_version=\$(python /opt/scripts/cellpose/main_distributed_cellpose.py \
