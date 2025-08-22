@@ -16,6 +16,7 @@ process CELLPOSE {
           path(working_dir, stageAs: 'cellpose-work/*') // this is optional
     tuple val(dask_scheduler),
           path(dask_config) // this is optional - if undefined pass in as empty list ([])
+    path(preprocessing_config) // preprocessing config file
     path(logging_config) // this is optional - if undefined pass in as empty list ([])
     val(cellpose_cpus)
     val(cellpose_mem_in_gb)
@@ -33,7 +34,7 @@ process CELLPOSE {
 
     script:
     def args = task.ext.args ?: ''
-    def image_name = file(image).name
+    def image_name = file(image).name.replace('.', '_')
     def input_image_subpath_arg = image_subpath
                                     ? "--input-subpath ${image_subpath}"
                                     : ''
@@ -45,6 +46,7 @@ process CELLPOSE {
            mkdir -p \${models_fullpath} && \
            export CELLPOSE_LOCAL_MODELS_PATH=\${models_fullpath}"
         : ''
+    def preprocessing_config_arg = preprocessing_config ? "--preprocessing-config ${preprocessing_config}" : ''
     def logging_config_arg = logging_config ? "--logging-config ${logging_config}" : ''
     def models_path_arg = models_path ? "--models-dir \${models_fullpath}" : ''
     def model_name_arg = model_name ? "--model ${model_name}": ''
@@ -59,12 +61,13 @@ process CELLPOSE {
             : [labels_image[0..<it], labels_image[(it+1)..-1]]
     }
     log.debug "Labels output name:ext => ${labels_noext}:${labels_ext}"
+
     """
-    input_image_fullpath=\$(readlink ${image})
+    input_image_fullpath=\$(readlink -e ${image})
     # create the output directory using the canonical name
-    output_fullpath=\$(readlink ${output_dir})
+    output_fullpath=\$(readlink -m ${output_dir})
     mkdir -p \${output_fullpath}
-    working_fullpath=\$(readlink ${working_dir_arg})
+    working_fullpath=\$(readlink -m ${working_dir_arg})
     mkdir -p \${working_fullpath}
     if [[ "${labels_image}" == "" ]]; then
         full_outputname=\${output_fullpath}
@@ -82,6 +85,7 @@ process CELLPOSE {
         ${model_name_arg}
         ${dask_scheduler_arg}
         ${dask_config_arg}
+        ${preprocessing_config_arg}
         ${logging_config_arg}
         ${args}
     )
@@ -103,5 +107,4 @@ process CELLPOSE {
     cellpose: \${cellpose_version}
     END_VERSIONS
     """
-
 }

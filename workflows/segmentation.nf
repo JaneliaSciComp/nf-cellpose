@@ -145,6 +145,7 @@ workflow SEGMENTATION {
         cellpose_inputs.cellpose_data,
         cellpose_inputs.cellpose_cluster,
         params.cellpose_log_config ? file(params.cellpose_log_config) : [],
+        params.preprocessing_config ? file(params.preprocessing_config) : [],
         params.cellpose_cpus,
         params.cellpose_mem_gb ?: params.default_mem_gb_per_cpu * params.cellpose_cpus,
     )
@@ -162,9 +163,11 @@ workflow SEGMENTATION {
         def (cellpose_meta,
              input_container, input_subpath,
              labels_containers, labels_subpath) = it
-        labels_containers.split('\n').collect { labels_container ->
+        labels_containers.split('\n')
+        .findAll { it }
+        .collect { labels_container ->
             def r = [
-                cellpose_meta, labels_cintainer, labels_subpath,
+                cellpose_meta, labels_container, labels_subpath,
             ]
             log.info "Multiscale inputs: $r"
             r
@@ -192,6 +195,6 @@ workflow SEGMENTATION {
     | DASK_STOP
 
     emit:
-    results  = cellpose_inputs.cellpose_data
+    results  = multiscale_outputs.results
     versions = ch_versions     // channel: [ path(versions.yml) ]
 }
