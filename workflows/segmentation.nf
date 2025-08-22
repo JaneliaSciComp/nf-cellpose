@@ -144,8 +144,8 @@ workflow SEGMENTATION {
     def cellpose_outputs = CELLPOSE(
         cellpose_inputs.cellpose_data,
         cellpose_inputs.cellpose_cluster,
-        params.cellpose_log_config ? file(params.cellpose_log_config) : [],
         params.preprocessing_config ? file(params.preprocessing_config) : [],
+        params.cellpose_log_config ? file(params.cellpose_log_config) : [],
         params.cellpose_cpus,
         params.cellpose_mem_gb ?: params.default_mem_gb_per_cpu * params.cellpose_cpus,
     )
