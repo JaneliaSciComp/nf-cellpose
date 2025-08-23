@@ -18,11 +18,23 @@
                     "help_text": "Path to the input data.",
                     "fa_icon": "fas fa-folder-open"
                 },
+                "input_pattern": {
+                    "type": "string",
+                    "description": "Input data glob pattern. If the input is a directory it process the segmentation on all files/dirs that match the pattern."
+                },
+                "input_subpath": {
+                    "type": "string",
+                    "description": "Specifies the input dataset if the input is a ZARR/N5/HDF5 container"
+                },
                 "outdir": {
                     "type": "string",
                     "format": "directory-path",
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
                     "fa_icon": "fas fa-folder-open"
+                },
+                "labels_dataset": {
+                    "type": "string",
+                    "description": "If the output is a ZARR/N5/HDF5 container, specifies the output labels group"
                 },
                 "email": {
                     "type": "string",
@@ -78,6 +90,63 @@
                     "description": "Institutional config URL link.",
                     "hidden": true,
                     "fa_icon": "fas fa-users-cog"
+                }
+            }
+        },
+        "segmentation_options": {
+            "title": "Segmentation options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "anisotropy": {
+                    "type": "number",
+                    "description": "Data anisotropy",
+                    "default": 1.0
+                },
+                "expansion_factor": {
+                    "type": "number",
+                    "description": "Data expansion factor",
+                    "default": 1.0
+                }
+            }
+        },
+        "multiscale_options": {
+            "title": "Multiscale options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "skip_multiscale": {
+                    "type": "boolean",
+                    "description": "If true skip generating multiscale pyramid for segmented images"
+                },
+                "multiscale_cpus": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "Number of cpus for multiscale"
+                },
+                "multiscale_mem_gb": {
+                    "type": "integer",
+                    "description": "Memory resource in GB for multiscale"
+                }
+            }
+        },
+        "distributed_processing_options": {
+            "title": "Distributed processing (Dask) options",
+            "type": "object",
+            "description": "Distributed processing options",
+            "default": "",
+            "properties": {
+                "with_dask": {
+                    "type": "boolean",
+                    "description": "Use a distributed Dask cluster for the segmentation",
+                    "default": false
+                },
+                "dask_config": {
+                    "type": "string",
+                    "description": "Dask configuration file",
+                    "default": "${projectDir}/conf/dask_config.yml"
                 }
             }
         },
@@ -164,6 +233,15 @@
         },
         {
             "$ref": "#/$defs/institutional_config_options"
+        },
+        {
+            "$ref": "#/$defs/segmentation_options"
+        },
+        {
+            "$ref": "#/$defs/multiscale_options"
+        },
+        {
+            "$ref": "#/$defs/distributed_processing_options"
         },
         {
             "$ref": "#/$defs/generic_options"

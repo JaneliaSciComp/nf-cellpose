@@ -51,7 +51,7 @@ process CELLPOSE {
     def models_path_arg = models_path ? "--models-dir \${models_fullpath}" : ''
     def model_name_arg = model_name ? "--model ${model_name}": ''
     def subpath_name = image_subpath ? "/${image_subpath.split('/')[-1]}" : ''
-    def working_dir_arg = "${working_dir ? working_dir : output_dir}/${image_name}${subpath_name}"
+    def working_dirname = working_dir ? working_dir : output_dir
     def labels_image = labels ?: ''
     def dask_scheduler_arg = dask_scheduler ? "--dask-scheduler ${dask_scheduler}" : ''
     def dask_config_arg = dask_config ? "--dask-config ${dask_config}" : ''
@@ -63,12 +63,26 @@ process CELLPOSE {
     log.debug "Labels output name:ext => ${labels_noext}:${labels_ext}"
 
     """
-    input_image_fullpath=\$(readlink -e ${image})
+    case \$(uname) in
+        Darwin)
+            READLINK_MISSING_OPT="readlink"
+            ;;
+        *)
+            READLINK_MISSING_OPT="readlink -m"
+            ;;
+    esac
+    input_image_fullpath=\$(readlink ${image})
+    echo "Input image: \${input_image_fullpath}"
     # create the output directory using the canonical name
-    output_fullpath=\$(readlink -m ${output_dir})
+    output_fullpath=\$(\${READLINK_MISSING_OPT} ${output_dir})
+    echo "Output dir: \${output_fullpath}"
     mkdir -p \${output_fullpath}
-    working_fullpath=\$(readlink -m ${working_dir_arg})
-    mkdir -p \${working_fullpath}
+    echo "Created output dir: \${output_fullpath}"
+    # create working directory
+    working_fullpath=\$(\${READLINK_MISSING_OPT} ${working_dirname})
+    echo "Working dir: \${working_fullpath}"
+    full_workingname="\${working_fullpath}/${image_name}${subpath_name}"
+    mkdir -p "\${full_workingname}"
     if [[ "${labels_image}" == "" ]]; then
         full_outputname=\${output_fullpath}
     else
@@ -80,7 +94,7 @@ process CELLPOSE {
         python /opt/scripts/cellpose/main_distributed_cellpose.py
         -i \${input_image_fullpath} ${input_image_subpath_arg}
         -o \${full_outputname} ${output_labels_subpath_arg}
-        --working-dir \${working_fullpath}
+        --working-dir \${full_workingname}
         ${models_path_arg}
         ${model_name_arg}
         ${dask_scheduler_arg}
