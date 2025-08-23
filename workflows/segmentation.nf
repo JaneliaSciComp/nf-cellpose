@@ -82,7 +82,7 @@ workflow SEGMENTATION {
                 error "The input filename - '${finput}' has no extension and no labels_container_ext is set. File extension is required for labels container to know how to save the output. Use --labels_container_ext to set it"
             }
             // create the name of the labels container by appending the labels_container_suffix param to the input container name
-            def fsuffix = params.labels_container_suffix ? "-${params.labels_container_suffix}" : ''
+            def fsuffix = params.labels_container_suffix ? "${params.labels_container_suffix}" : ''
             def labels_container = "${fn}${fsuffix}${fext}" 
             def labels_subpath
             if (params.labels_group && params.input_subpath ) {
