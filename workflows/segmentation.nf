@@ -85,10 +85,10 @@ workflow SEGMENTATION {
 
             def labels_container = "${fn}${fsuffix}${fext}" 
             def labels_subpath
-            if (params.labels_dataset && params.input_subpath ) {
-                labels_subpath = "${params.labels_dataset}/${params.input_subpath}"
-            } else if (params.labels_dataset) {
-                labels_subpath = params.labels_dataset
+            if (params.labels_group && params.input_subpath ) {
+                labels_subpath = "${params.labels_group}/${params.input_subpath}"
+            } else if (params.labels_group) {
+                labels_subpath = params.labels_group
             } else if (params.input_subpath) {
                 labels_subpath = params.input_subpath
             } else {

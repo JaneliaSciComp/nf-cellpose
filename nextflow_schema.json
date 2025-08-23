@@ -32,7 +32,7 @@
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
                     "fa_icon": "fas fa-folder-open"
                 },
-                "labels_dataset": {
+                "labels_group": {
                     "type": "string",
                     "description": "If the output is a ZARR/N5/HDF5 container, specifies the output labels group"
                 },
