@@ -91,7 +91,7 @@ process CELLPOSE {
     ${set_models_path}
 
     CMD=(
-        python /opt/scripts/cellpose/main_distributed_cellpose.py
+        python -m tools.main_distributed_cellpose
         -i \${input_image_fullpath} ${input_image_subpath_arg}
         -o \${full_outputname} ${output_labels_subpath_arg}
         --working-dir \${full_workingname}
@@ -112,7 +112,7 @@ process CELLPOSE {
         output_label_images+=("\${output_fullpath}/\${sr}")
     done
 
-    cellpose_version=\$(python /opt/scripts/cellpose/main_distributed_cellpose.py \
+    cellpose_version=\$(python -m tools.main_distributed_cellpose \
                         --version | \
                         grep "cellpose version" | \
                         sed "s/cellpose version:\\s*//")
