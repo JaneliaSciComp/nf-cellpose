@@ -32,6 +32,14 @@
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
                     "fa_icon": "fas fa-folder-open"
                 },
+                "labels_container_suffix": {
+                    "type": "string",
+                    "description": "Suffix appended to the input container to create the labels container name."
+                },
+                "labels_container_ext": {
+                    "type": "string",
+                    "description": "Labels container extension. This could be used to save the labels as tiff when the input is a zarr container, or vice-versa."
+                },
                 "labels_group": {
                     "type": "string",
                     "description": "If the output is a ZARR/N5/HDF5 container, specifies the output labels group"
@@ -99,6 +107,19 @@
             "description": "",
             "default": "",
             "properties": {
+                "cellpose_model": {
+                    "type": "string",
+                    "description": "Name of the cellpose model. If it's a full path the model is looked up in the corresponding location otherwise it uses cellpose_models_dir",
+                    "default": "cpsam"
+                },
+                "cellpose_models_dir": {
+                    "type": "string",
+                    "description": "Location of the cellpose models"
+                },
+                "cellpose_log_config": {
+                    "type": "string",
+                    "description": "Cellpose log configuration."
+                },
                 "anisotropy": {
                     "type": "number",
                     "description": "Data anisotropy",
@@ -108,6 +129,16 @@
                     "type": "number",
                     "description": "Data expansion factor",
                     "default": 1.0
+                },
+                "cellpose_cpus": {
+                    "type": "number",
+                    "description": "CPU(s) allocated for the cellpose driver",
+                    "default": 1
+                },
+                "cellpose_mem_gb": {
+                    "type": "number",
+                    "description": "Memory in GB allocated for the cellpose driver. If the the memory is computed using default_mem_gb_per_cpu*cellpose_cpus",
+                    "default": 0
                 }
             }
         },
@@ -219,10 +250,18 @@
                     "description": "Suffix to add to the trace report filename. Default is the date and time in the format yyyy-MM-dd_HH-mm-ss.",
                     "hidden": true
                 },
+                "workdir": {
+                    "type": "string",
+                    "description": "Working directory for saving dask logs or for intermediate labels zarr container."
+                },
                 "container_runtime_opts": {
                     "type": "string",
                     "description": "Global container options",
                     "hidden": true
+                },
+                "default_mem_gb_per_cpu": {
+                    "type": "number",
+                    "description": "Default memory for CPU core. This could be used to computed the required memory if only the CPUs are specified."
                 }
             }
         }
