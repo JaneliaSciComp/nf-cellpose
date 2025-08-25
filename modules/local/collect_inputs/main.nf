@@ -1,6 +1,5 @@
 process COLLECT_INPUTS {
     label 'process_single'
-    container { task.ext.container }
 
     input:
     tuple path(input_path), val(input_pattern)
