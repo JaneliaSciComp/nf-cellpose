@@ -51,7 +51,7 @@ workflow SEGMENTATION {
         Channel.of([meta, dask_data]),
         params.with_dask,
         params.dask_config,
-        file("${params.workdir}/dask-work/${sessionId}"),
+        file("${params.workdir}/dask-work/${workflow.sessionId}"),
         params.dask_workers,
         params.dask_min_workers,
         params.dask_worker_cpus,
@@ -126,7 +126,7 @@ workflow SEGMENTATION {
             cellpose_output_dir,
             labels_container,
             labels_subpath,
-            file("${params.workdir}/cellpose-work/${sessionId}"),
+            file("${params.workdir}/cellpose-work/${workflow.sessionId}"),
         ]
 
         def cellpose_cluster = [
