@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    JaneliaSciComp/nf-segmentation
+    JaneliaSciComp/nf-cellpose
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/JaneliaSciComp/nf-segmentation
+    Github : https://github.com/JaneliaSciComp/nf-cellpose
 ----------------------------------------------------------------------------------------
 */
 
