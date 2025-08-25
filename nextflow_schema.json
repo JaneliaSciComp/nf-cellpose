@@ -409,7 +409,9 @@
                 },
                 "default_mem_gb_per_cpu": {
                     "type": "number",
-                    "description": "Default memory for CPU core. This could be used to computed the required memory if only the CPUs are specified."
+                    "description": "Default memory for CPU core. This could be used to computed the required memory if only the CPUs are specified.",
+                    "default": 15,
+                    "hidden": true
                 }
             }
         }
