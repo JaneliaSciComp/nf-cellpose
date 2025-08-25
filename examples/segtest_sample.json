@@ -5,6 +5,8 @@
     "outdir": "/nrs/scicompsoft/goinac/multifish/segtest/segmentation",
     "cellpose_model": "${env.HOME}/.cellpose/models/cpsam",
     "cellpose_cpus": 1,
+    "cellpose_runtime_opts": "",
+    "cellpose_cluster_opts": "",
     "z_axis": "1",
     "channel_axis": "0",
     "gpu_device": "0",
@@ -12,5 +14,5 @@
     "dask_worker_cpus": 1,
     "dask_worker_runtime_opts": "--nv",
     "dask_worker_cluster_opts": "-gpu 'num=1' -q gpu_l4",
-    "lsf_opts": "-P scicompsoft"
+    "cluster_opts": "-P scicompsoft"
 }
