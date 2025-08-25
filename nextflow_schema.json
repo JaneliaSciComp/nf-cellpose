@@ -178,6 +178,44 @@
                     "type": "string",
                     "description": "Dask configuration file",
                     "default": "${projectDir}/conf/dask_config.yml"
+                },
+                "dask_workers": {
+                    "type": "integer",
+                    "description": "Number of cellpose dask workers",
+                    "default": 1
+                },
+                "dask_min_workers": {
+                    "type": "integer",
+                    "description": "Number of minimum cellpose dask workers that need to be available before the work starts.",
+                    "default": 1
+                },
+                "dask_scheduler_port": {
+                    "type": "integer",
+                    "description": "Port used by the dask scheduler.",
+                    "default": 0
+                },
+                "dask_dashboard_port": {
+                    "type": "integer",
+                    "description": "Port used by the dask dashboard.",
+                    "default": 0
+                },
+                "dask_worker_cpus": {
+                    "type": "number",
+                    "description": "CPU(s) allocated for the cellpose dask worker",
+                    "default": 1
+                },
+                "dask_worker_mem_gb": {
+                    "type": "number",
+                    "description": "Memory in GB allocated for the cellpose dask worker. If the the memory is computed using default_mem_gb_per_cpu*dask_worker_cpus",
+                    "default": 0
+                },
+                "dask_worker_runtime_opts": {
+                    "type": "string",
+                    "description": "Runtime container for running dask workers. This is needed for example for apptainer or singularity to set the '--nv' flag"
+                },
+                "dask_worker_cluster_opts": {
+                    "type": "string",
+                    "description": "Cluster options for running dask workers or a GPU queue."
                 }
             }
         },
