@@ -52,7 +52,7 @@ workflow SEGMENTATION {
         Channel.of([meta, dask_data]),
         params.with_dask,
         params.dask_config,
-        session_work_dir,
+        file("${session_work_dir}/dask-work"),
         params.dask_workers,
         params.dask_min_workers,
         params.dask_worker_cpus,
