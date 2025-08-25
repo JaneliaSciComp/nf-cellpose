@@ -19,7 +19,6 @@ workflow SEGMENTATION {
 
     def ch_versions = Channel.empty()
 
-    def session_work_dir = "${params.workdir}/${workflow.sessionId}"
     def meta = [ id: "segmentation" ]
     def input = file(params.input)
     def outputdir = file(params.outdir)
@@ -33,18 +32,18 @@ workflow SEGMENTATION {
             model_dir = full_model_path.parent
             model_name = full_model_path.name
         } else {
-            model_dir = params.cellpose_models_dir ? file(params.cellpose_models_dir) : file("${session_work_dir}/cellpose_models")
+            model_dir = params.cellpose_models_dir ? file(params.cellpose_models_dir) : file("${params.workdir}/cellpose_models")
             model_name = params.cellpose_model
         }
     } else {
-        model_dir = params.cellpose_mnodels_dir ? file(params.cellpose_models_dir) : file("${session_work_dir}/cellpose_models")
+        model_dir = params.cellpose_mnodels_dir ? file(params.cellpose_models_dir) : file("${params.workdir}/cellpose_models")
         model_name = ''
     }
 
     def dask_data = [
         input.parent,
         outputdir.parent,
-        file(session_work_dir),
+        file(params.workdir),
         model_dir,
     ]
 
@@ -52,7 +51,7 @@ workflow SEGMENTATION {
         Channel.of([meta, dask_data]),
         params.with_dask,
         params.dask_config,
-        file("${session_work_dir}/dask-work"),
+        file("${params.workdir}/dask-work/${sessionId}"),
         params.dask_workers,
         params.dask_min_workers,
         params.dask_worker_cpus,
@@ -127,7 +126,7 @@ workflow SEGMENTATION {
             cellpose_output_dir,
             labels_container,
             labels_subpath,
-            file("${session_work_dir}/cellpose-work"),
+            file("${params.workdir}/cellpose-work/${sessionId}"),
         ]
 
         def cellpose_cluster = [
