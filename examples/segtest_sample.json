@@ -3,7 +3,7 @@
     "input_pattern": "",
     "input_subpath": "t1/1",
     "outdir": "/nrs/scicompsoft/goinac/multifish/segtest/segmentation",
-    "cellpose_model": "${HOME}/.cellpose/models/cpsam",
+    "cellpose_model": "${env.HOME}/.cellpose/models/cpsam",
     "cellpose_cpus": 1,
     "z_axis": "1",
     "channel_axis": "0",
