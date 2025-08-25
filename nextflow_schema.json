@@ -120,15 +120,35 @@
                     "type": "string",
                     "description": "Cellpose log configuration."
                 },
+                "z_axis": {
+                    "type": "string",
+                    "description": "Z axis index. This is the Z axis index after the timepoint dimension had been removed.",
+                    "default": "1"
+                },
+                "channel_axis": {
+                    "type": "string",
+                    "description": "Channel axis index. This is the channel axis index after the timepoint dimension had been removed. If this is not set cellpose will automatically use the last axis (-1) as the channel.",
+                    "default": "1"
+                },
                 "anisotropy": {
                     "type": "number",
-                    "description": "Data anisotropy",
+                    "description": "Data anisotropy. If this is not provided - it will be computed from voxel spacing.",
                     "default": 1.0
+                },
+                "voxel_spacing": {
+                    "type": "string",
+                    "description": "Voxel spacing. If the input is a zarr container this is read from zarr attributes."
                 },
                 "expansion_factor": {
                     "type": "number",
                     "description": "Data expansion factor",
                     "default": 1.0
+                },
+                "timeindex": {
+                    "type": "number",
+                    "description": "Timepoint axis",
+                    "default": 0,
+                    "hidden": true,
                 },
                 "cellpose_cpus": {
                     "type": "number",
