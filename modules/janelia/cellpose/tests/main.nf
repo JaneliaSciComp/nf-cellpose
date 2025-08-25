@@ -40,7 +40,7 @@ workflow test_cellpose {
             cellpose_models_path,
             params.model,
             file(params.output_image_dir),
-            params.output_image_name, '',
+            params.output_image_name, /*labels subpath*/'',
             cellpose_working_path,
         ]
     }
