@@ -27,7 +27,7 @@ workflow SEGMENTATION {
 
     if (params.cellpose_model) {
         if (params.cellpose_model.startsWith('/')) {
-            logger.info("Use model from: ${params.cellpose_model}")
+            log.info("Use model from: ${params.cellpose_model}")
             // model is set using an absolute path
             def full_model_path = file(model_name)
             model_dir = full_model_path.parent
@@ -35,12 +35,12 @@ workflow SEGMENTATION {
         } else {
             model_dir = params.cellpose_models_dir ? file(params.cellpose_models_dir) : file("${params.workdir}/cellpose_models")
             model_name = params.cellpose_model
-            logger.info("Use model ${model_name} that will be downloaded to ${model_dir}")
+            log.info("Use model ${model_name} that will be downloaded to ${model_dir}")
         }
     } else {
         model_dir = params.cellpose_mnodels_dir ? file(params.cellpose_models_dir) : file("${params.workdir}/cellpose_models")
         model_name = ''
-        logger.info("Use default model that will be downloaded to ${model_dir}")
+        log.info("Use default model that will be downloaded to ${model_dir}")
     }
 
     def dask_data = [
