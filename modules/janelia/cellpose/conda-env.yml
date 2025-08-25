@@ -8,7 +8,7 @@ dependencies:
   - pip
   - flatten_json
   - imagecodecs
-  - numpy>=1.26.0,<2
+  - numpy>=1.26,<2
   - pyyaml
   - scikit-image>=0.21.0
   - scikit-learn>=1.4.1
@@ -17,6 +17,7 @@ dependencies:
   - roifile
   - pip:
     - cellpose==4.0.6
+    - git+https://github.com/JaneliaSciComp/containers@ome-zarr#subdirectory=cellpose/4.0.6-dask2025.5.1-py12/scripts/python
     - pynrrd
     - ome-zarr-models==0.1.6
     - tornado

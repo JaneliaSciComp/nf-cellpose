@@ -65,12 +65,15 @@ process CELLPOSE {
     """
     case \$(uname) in
         Darwin)
+            detected_os=OSX
             READLINK_MISSING_OPT="readlink"
             ;;
         *)
+            detected_os=Linux
             READLINK_MISSING_OPT="readlink -m"
             ;;
     esac
+    echo "Detected OS: \${detected_os}"
     input_image_fullpath=\$(readlink ${image})
     echo "Input image: \${input_image_fullpath}"
     # create the output directory using the canonical name
