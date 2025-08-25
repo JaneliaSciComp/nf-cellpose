@@ -133,7 +133,7 @@
                 "anisotropy": {
                     "type": "number",
                     "description": "Data anisotropy. If this is not provided - it will be computed from voxel spacing.",
-                    "default": 1.0
+                    "default": 1
                 },
                 "voxel_spacing": {
                     "type": "string",
@@ -142,13 +142,13 @@
                 "expansion_factor": {
                     "type": "number",
                     "description": "Data expansion factor",
-                    "default": 1.0
+                    "default": 1
                 },
                 "timeindex": {
                     "type": "number",
                     "description": "Timepoint axis",
                     "default": 0,
-                    "hidden": true,
+                    "hidden": true
                 },
                 "cellpose_cpus": {
                     "type": "number",
@@ -159,6 +159,97 @@
                     "type": "number",
                     "description": "Memory in GB allocated for the cellpose driver. If the the memory is computed using default_mem_gb_per_cpu*cellpose_cpus",
                     "default": 0
+                },
+                "input_channels": {
+                    "type": "string",
+                    "description": "Comma delimited list of 0-based channels used for segmentation.",
+                    "default": "1",
+                },
+                "process_blocksize": {
+                    "type": "string",
+                    "description": "Define spatial block partitioning for distributing the work to a Dask cluster. Even for 4 or 5-dimensional arrays this only needs to specify the block partitioning in the 3D spatial dimensions only",
+                    "default": "128,128,128"
+                },
+                "local_workers": {
+                    "type": "integer",
+                    "description": "Even when with_dask parameter is false, cellpose can still distribute the work to a local cluster if process_blocksize is defined. In that case this argument specifies the number of local workers to be used.",
+                    "default": 1
+                },
+                "blocks_overlap": {                    
+                    "type": "string",
+                    "description": "Blocks overlap used for distributed processing"
+                },
+                "gpu_device": {
+                    "type": "string",
+                    "description": "which gpu device to use"
+                },
+                "do_3D": {
+                    "type": "boolean",
+                    "description": "Perform 3D segmentation",
+                    "default": true,
+                    "hidden": true
+                },
+                "use_gpu": {
+                    "type": "boolean",
+                    "description": "Whether to use GPU or not (cpsam is extremely slow if GPU is not used)",
+                    "default": true,
+                    "hidden": true
+                },
+                "skip_normalize": {
+                    "type": "boolean",
+                    "description": "Flag to skip normalization - not recommended for 3D",
+                    "default": false,
+                    "hidden": true
+                },
+                "norm_percentile": {
+                    "type": "string",
+                    "description": "low and high percentile for normalization",
+                    "default": "1 99"
+                },
+                "stitch_threshold": {
+                    "type": "integer",
+                    "description": "cellpose stitch_threshold parameter",
+                    "default": 0
+                },
+                "cellprob_threshold": {
+                    "type": "integer",
+                    "description": "cellpose cellprob_threshold parameter",
+                    "default": 1
+                },
+                "flow3D_smooth": {
+                    "type": "integer",
+                    "description": "cellpose flow3D_smooth parameter",
+                    "default": 1
+                },
+                "cell_diameter": {
+                    "type": "integer",
+                    "description": "cell diameter",
+                    "default": 0
+                },
+                "min_size": {
+                    "type": "integer",
+                    "description": "cell minimum size",
+                    "default": 15
+                },
+                "merge_labels_distance_th": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "Distance threshold for merging labels across blocks when distributed cellppose is used.",
+                    "hidden": true
+                },
+                "preprocessing_steps": {
+                    "type": "string",
+                    "description": "Comma delimited step names to run for block preprocessing.",
+                    "hidden": true
+                },
+                "preprocessing_config": {
+                    "type": "string",
+                    "description": "Preprocessing YAML config  file.  This contains preprocessing steps configuration.",
+                    "hidden": true
+                },
+                "verbose": {
+                    "type": "boolean",
+                    "description": "Log verbosity"
                 }
             }
         },
@@ -191,8 +282,7 @@
             "properties": {
                 "with_dask": {
                     "type": "boolean",
-                    "description": "Use a distributed Dask cluster for the segmentation",
-                    "default": false
+                    "description": "Use a distributed Dask cluster for the segmentation"
                 },
                 "dask_config": {
                     "type": "string",
