@@ -102,7 +102,7 @@
                 "lsf_opts": {
                     "type": "string",
                     "description": "Default LSF cluster options",
-                    "hidden": true,
+                    "hidden": true
                 }
             }
         },
@@ -168,7 +168,7 @@
                 "input_channels": {
                     "type": "string",
                     "description": "Comma delimited list of 0-based channels used for segmentation.",
-                    "default": "1",
+                    "default": "1"
                 },
                 "process_blocksize": {
                     "type": "string",
@@ -180,7 +180,7 @@
                     "description": "Even when with_dask parameter is false, cellpose can still distribute the work to a local cluster if process_blocksize is defined. In that case this argument specifies the number of local workers to be used.",
                     "default": 1
                 },
-                "blocks_overlap": {                    
+                "blocks_overlap": {
                     "type": "string",
                     "description": "Blocks overlap used for distributed processing"
                 },
