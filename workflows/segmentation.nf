@@ -176,22 +176,29 @@ workflow SEGMENTATION {
         }
     }
 
+    // the dask_info used for multiscale will be the same as the one used for cellpose
+    // this is acceptable now because for now there's only going to a single dask cluster
     def multiscale_outputs = MULTISCALE(
         multiscale_inputs,
-        cellpose_inputs.cellpose_cluster,
+        cellpose_inputs.cellpose_cluster, // this can be questionable here but there's a single dask cluster
         params.skip_multiscale,
         params.multiscale_cpus,
         params.multiscale_mem_gb  > 0 ? params.multiscale_mem_gb : params.default_mem_gb_per_cpu * params.multiscale_cpus,
     )
+
+    // wait until all multiscale finish - this is still needed in case multiple inputs are being segmented
+    def all_multiscale_results = multiscale_outputs.results
+    | groupTuple(by:0)
 
     // append multiscale version
     ch_versions = ch_versions.concat (multiscale_outputs.versions)
 
     // stop the dask cluster
     dask_cluster
-    | join(multiscale_outputs.results, by:0)
+    | join(all_multiscale_results, by:0)
     | map {
         def (cluster_meta, cluster_context) = it
+        log.debug "Prepare to stop the dask cluster -> $it"
         [ cluster_meta, cluster_context ]
     }
     | DASK_STOP

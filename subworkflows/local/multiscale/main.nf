@@ -8,7 +8,7 @@ include { MULTISCALE_PYRAMID } from '../../../modules/local/multiscale/pyramid/m
 
 workflow MULTISCALE {
     take:
-    ch_meta       // ch: [ meta, img_container, img_dataset ]
+    ch_meta       // ch: [ meta, input_img_container, input_img_dataset ]
     ch_dask_info  // ch: [ dask_scheduler, dask_config ]
     skip_flag     // boolean
     cpus          // number
@@ -34,6 +34,6 @@ workflow MULTISCALE {
     }
 
     emit:
-    results = multiscale_results
+    results = multiscale_results // [ meta, input_img_container, input_img_dataset ]
     versions = multiscale_version
 }
