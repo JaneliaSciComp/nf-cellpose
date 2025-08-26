@@ -98,6 +98,11 @@
                     "description": "Institutional config URL link.",
                     "hidden": true,
                     "fa_icon": "fas fa-users-cog"
+                },
+                "lsf_opts": {
+                    "type": "string",
+                    "description": "Default LSF cluster options",
+                    "hidden": true,
                 }
             }
         },
@@ -250,6 +255,14 @@
                 "verbose": {
                     "type": "boolean",
                     "description": "Log verbosity"
+                },
+                "cellpose_runtime_opts": {
+                    "type": "string",
+                    "description": "When cellpose is not distributed on a Dask cluster - it requires GPU. This can be used to enable GPU access for the cellpose container runtime"
+                },
+                "cellpose_cluster_opts": {
+                    "type": "string",
+                    "description": "When cellpose is not distributed on a Dask cluster - it requires GPU. This can be used to dispatch the cellpose job to a GPU node"
                 }
             }
         },
@@ -270,7 +283,8 @@
                 },
                 "multiscale_mem_gb": {
                     "type": "integer",
-                    "description": "Memory resource in GB for multiscale"
+                    "description": "Memory resource in GB for multiscale",
+                    "default": 0
                 }
             }
         },
