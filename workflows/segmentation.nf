@@ -27,11 +27,11 @@ workflow SEGMENTATION {
 
     if (params.cellpose_model) {
         if (params.cellpose_model.startsWith('/')) {
-            log.info("Use model from: ${params.cellpose_model}")
             // model is set using an absolute path
-            def full_model_path = file(model_name)
+            def full_model_path = file(cellpose_model)
             model_dir = full_model_path.parent
             model_name = full_model_path.name
+            log.info("Use model ${model_name} located at: ${model_dir}, derived from: ${params.cellpose_model}")
         } else {
             model_dir = params.cellpose_models_dir ? file(params.cellpose_models_dir) : file("${params.workdir}/cellpose_models")
             model_name = params.cellpose_model
