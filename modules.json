@@ -7,7 +7,7 @@
                 "janelia": {
                     "cellpose": {
                         "branch": "main",
-                        "git_sha": "2a343e2f3a45213be05ca36e5de7d33f54c05ca0",
+                        "git_sha": "a9c0f2eff928a964543abc55927bfae8b958e3b1",
                         "installed_by": ["modules"]
                     },
                     "cellpose/tests": {
