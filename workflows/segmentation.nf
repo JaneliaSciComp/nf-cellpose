@@ -58,7 +58,7 @@ workflow SEGMENTATION {
         params.dask_workers,
         params.dask_min_workers,
         params.dask_worker_cpus,
-        params.dask_worker_mem_gb ?: params.default_mem_gb_per_cpu * params.dask_worker_cpus,
+        params.dask_worker_mem_gb > 0  ? params.dask_worker_mem_gb : params.default_mem_gb_per_cpu * params.dask_worker_cpus,
     )
 
     def ch_data_inputs = Channel.of([file(params.input), params.input_pattern])
@@ -149,7 +149,7 @@ workflow SEGMENTATION {
         params.preprocessing_config ? file(params.preprocessing_config) : [],
         params.cellpose_log_config ? file(params.cellpose_log_config) : [],
         params.cellpose_cpus,
-        params.cellpose_mem_gb ?: params.default_mem_gb_per_cpu * params.cellpose_cpus,
+        params.cellpose_mem_gb > 0 ? params.cellpose_mem_gb : params.default_mem_gb_per_cpu * params.cellpose_cpus,
     )
 
     def cellpose_results = cellpose_outputs.results
@@ -181,7 +181,7 @@ workflow SEGMENTATION {
         cellpose_inputs.cellpose_cluster,
         params.skip_multiscale,
         params.multiscale_cpus,
-        params.multiscale_mem_gb ?: params.default_mem_gb_per_cpu * params.multiscale_cpus,
+        params.multiscale_mem_gb  > 0 ? params.multiscale_mem_gb : params.default_mem_gb_per_cpu * params.multiscale_cpus,
     )
 
     // append multiscale version
