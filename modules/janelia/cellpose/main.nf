@@ -35,12 +35,14 @@ process CELLPOSE {
     script:
     def args = task.ext.args ?: ''
     def image_name = file(image).name.replace('.', '_')
-    def input_image_subpath_arg = image_subpath
-                                    ? "--input-subpath ${image_subpath}"
+    def input_subpath = image_subpath
+    def input_image_subpath_arg = input_subpath
+                                    ? "--input-subpath ${input_subpath}"
                                     : ''
-    output_labels_subpath = labels_subpath ?: image_subpath
-    def output_labels_subpath_arg  = labels_subpath
-                                    ? "--output-subpath ${labels_subpath}"
+    def labels_subpath_arg = labels_subpath
+    output_labels_subpath = labels_subpath_arg ?: input_subpath
+    def output_labels_subpath_arg  = labels_subpath_arg
+                                    ? "--output-subpath ${labels_subpath_arg}"
                                     : ''
     def set_models_path = models_path
         ? "models_fullpath=\$(readlink ${models_path}) && \
