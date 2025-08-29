@@ -3,13 +3,19 @@
     "input_pattern": "",
     "input_subpath": "t1/1",
     "outdir": "/nrs/scicompsoft/goinac/multifish/segtest/segmentation",
+
+    "with_dask": true,
+    "process_blocksize": "128,128,128",
+
     "cellpose_model": "${HOME}/.cellpose/models/cpsam",
     "cellpose_cpus": 1,
     "cellpose_runtime_opts": "",
     "cellpose_cluster_opts": "",
+
+    "input_channels": "1",
     "z_axis": "1",
     "channel_axis": "0",
-    "gpu_device": "0",
+
     "dask_workers": 4,
     "dask_worker_cpus": 1,
     "dask_worker_runtime_opts": "--nv",

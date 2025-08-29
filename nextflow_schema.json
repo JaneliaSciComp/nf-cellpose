@@ -110,7 +110,7 @@
             "title": "Segmentation options",
             "type": "object",
             "description": "",
-            "default": "",
+            "required": ["input_channels", "z_axis", "channel_axis"],
             "properties": {
                 "cellpose_model": {
                     "type": "string",
@@ -256,13 +256,13 @@
                     "type": "boolean",
                     "description": "Log verbosity"
                 },
-                "cellpose_runtime_opts": {
+                "headjob_runtime_opts": {
                     "type": "string",
-                    "description": "When cellpose is not distributed on a Dask cluster - it requires GPU. This can be used to enable GPU access for the cellpose container runtime"
+                    "description": "Cellpose head job container runtime options. When cellpose is not distributed on a Dask cluster - it requires GPU."
                 },
-                "cellpose_cluster_opts": {
+                "headjob_cluster_opts": {
                     "type": "string",
-                    "description": "When cellpose is not distributed on a Dask cluster - it requires GPU. This can be used to dispatch the cellpose job to a GPU node"
+                    "description": "Cellpose head job cluster options. When cellpose is not distributed on a Dask cluster - the job needs to be dispatched on a GPU node."
                 }
             }
         },
@@ -332,6 +332,12 @@
                     "type": "number",
                     "description": "Memory in GB allocated for the cellpose dask worker. If the the memory is computed using default_mem_gb_per_cpu*dask_worker_cpus",
                     "default": 0
+                },
+                "dask_start_timeout_secs": {
+                    "type": "integer",
+                    "description": "Timeout value (in seconds) for starting the Dask cluster",
+                    "default": 300,
+                    "hidden": true
                 },
                 "dask_worker_runtime_opts": {
                     "type": "string",
@@ -418,7 +424,7 @@
                 },
                 "container_runtime_opts": {
                     "type": "string",
-                    "description": "Global container options",
+                    "description": "Global container runtime options",
                     "hidden": true
                 },
                 "default_mem_gb_per_cpu": {
