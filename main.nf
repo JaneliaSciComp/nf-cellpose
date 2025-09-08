@@ -14,8 +14,8 @@
 */
 
 include { SEGMENTATION            } from './workflows/segmentation'
-include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_nf-cellpose_pipeline'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_nf-cellpose_pipeline'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_cellpose_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_cellpose_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
