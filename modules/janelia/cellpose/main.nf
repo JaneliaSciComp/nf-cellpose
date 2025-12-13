@@ -1,5 +1,5 @@
 process CELLPOSE {
-    container { task && task.ext.container ?: 'ghcr.io/janeliascicomp/cellpose:4.0.6-dask2025.5.1-py12' }
+    container { task && task.ext.container ? task.ext.container : 'ghcr.io/janeliascicomp/cellpose:4.0.8-dask2025.11.0-py12' }
     cpus { cellpose_cpus }
     memory "${cellpose_mem_in_gb} GB"
     conda 'modules/janelia/cellpose/conda-env.yml'
@@ -35,14 +35,12 @@ process CELLPOSE {
     script:
     def args = task.ext.args ?: ''
     def image_name = file(image).name.replace('.', '_')
-    def input_subpath = image_subpath
-    def input_image_subpath_arg = input_subpath
-                                    ? "--input-subpath ${input_subpath}"
+    def input_image_subpath_arg = image_subpath
+                                    ? "--input-subpath ${image_subpath}"
                                     : ''
-    def labels_subpath_arg = labels_subpath
-    output_labels_subpath = labels_subpath_arg ?: input_subpath
-    def output_labels_subpath_arg  = labels_subpath_arg
-                                    ? "--output-subpath ${labels_subpath_arg}"
+    output_labels_subpath = labels_subpath ?: image_subpath
+    def output_labels_subpath_arg  = labels_subpath
+                                    ? "--output-subpath ${labels_subpath}"
                                     : ''
     def set_models_path = models_path
         ? "models_fullpath=\$(readlink ${models_path}) && \
