@@ -17,7 +17,7 @@ workflow SEGMENTATION {
 
     main:
 
-    def ch_versions = Channel.empty()
+    def ch_versions = channel.empty()
 
     def meta = [ id: "segmentation" ]
     def input = file(params.input)
@@ -61,7 +61,7 @@ workflow SEGMENTATION {
         params.dask_worker_mem_gb > 0  ? params.dask_worker_mem_gb : params.default_mem_gb_per_cpu * params.dask_worker_cpus,
     )
 
-    def ch_data_inputs = Channel.of([file(params.input), params.input_pattern])
+    def ch_data_inputs = channel.of([file(params.input), params.input_pattern])
         | COLLECT_INPUTS
         | splitText
         | map { input_name ->

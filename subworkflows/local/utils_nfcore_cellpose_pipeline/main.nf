@@ -32,11 +32,12 @@ workflow PIPELINE_INITIALISATION {
     outdir            //  string: The output directory where the results will be saved
     help
     help_full
+    show_hidden
     command
 
     main:
 
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     //
     // Print version and exit if required and dump pipeline parameters to JSON file
@@ -57,7 +58,7 @@ workflow PIPELINE_INITIALISATION {
         null,
         help,
         help_full,
-        false,
+        show_hidden,
         '',
         '',
         command,
