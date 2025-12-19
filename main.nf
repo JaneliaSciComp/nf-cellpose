@@ -33,6 +33,9 @@ workflow {
         params.validate_params,
         args,
         params.outdir,
+        params.help,
+        params.help_full,
+        '', // example command
     )
 
     //

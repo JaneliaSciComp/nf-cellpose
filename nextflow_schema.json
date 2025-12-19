@@ -110,7 +110,7 @@
             "title": "Segmentation options",
             "type": "object",
             "description": "",
-            "required": ["input_channels", "z_axis", "channel_axis"],
+            "required": ["input_channels"],
             "properties": {
                 "cellpose_model": {
                     "type": "string",
@@ -127,13 +127,11 @@
                 },
                 "z_axis": {
                     "type": "string",
-                    "description": "Z axis index. This is the Z axis index after the timepoint dimension had been removed.",
-                    "default": "1"
+                    "description": "Z axis index. This is the Z axis index after the timepoint dimension had been removed. For OME-ZARR input the axis is read from the OME metadata."
                 },
                 "channel_axis": {
                     "type": "string",
-                    "description": "Channel axis index. This is the channel axis index after the timepoint dimension had been removed. If this is not set cellpose will automatically use the last axis (-1) as the channel.",
-                    "default": "1"
+                    "description": "Channel axis index. This is the channel axis index after the timepoint dimension had been removed. For OME-ZARR input the axis is read from the OME metadata. If this is not set cellpose will automatically use the last axis (-1) as the channel."
                 },
                 "anisotropy": {
                     "type": "number",

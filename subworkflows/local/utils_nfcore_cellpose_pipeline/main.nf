@@ -30,6 +30,9 @@ workflow PIPELINE_INITIALISATION {
     validate_params   // boolean: Boolean whether to validate parameters against the schema at runtime
     nextflow_cli_args //   array: List of positional nextflow CLI args
     outdir            //  string: The output directory where the results will be saved
+    help
+    help_full
+    command
 
     main:
 
@@ -51,7 +54,13 @@ workflow PIPELINE_INITIALISATION {
     UTILS_NFSCHEMA_PLUGIN (
         workflow,
         validate_params,
-        null
+        null,
+        help,
+        help_full,
+        false,
+        '',
+        '',
+        command,
     )
 
     //
