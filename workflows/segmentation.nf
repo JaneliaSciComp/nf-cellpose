@@ -51,7 +51,7 @@ workflow SEGMENTATION {
     ]
 
     def dask_cluster = DASK_START(
-        Channel.of([meta, dask_data]),
+        channel.of([meta, dask_data]),
         params.with_dask,
         params.dask_config,
         file("${params.workdir}/dask-work/${workflow.sessionId}"),
