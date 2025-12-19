@@ -20,7 +20,7 @@ workflow MULTISCALE {
     if (skip_flag) {
         multiscale_results = ch_meta
         multiscale_results.subscribe { log.debug "Skip multiscale pyramid: $it" }
-        multiscale_version = Channel.empty()
+        multiscale_version = channel.empty()
     } else {
         MULTISCALE_PYRAMID(
             ch_meta,
