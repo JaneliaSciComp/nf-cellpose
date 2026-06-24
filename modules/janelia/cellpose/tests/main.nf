@@ -44,7 +44,7 @@ workflow test_cellpose {
             cellpose_working_path,
         ]
     }
-    cellpose_test_data.subscribe { log.info "Cellpose path inputs: $it" }
+    cellpose_test_data.subscribe { row -> log.info "Cellpose path inputs: $row" }
 
     def cellpose_results = CELLPOSE(
         cellpose_test_data,
@@ -55,8 +55,8 @@ workflow test_cellpose {
         params.cellpose_driver_mem_gb,
     )
 
-    cellpose_results.results.subscribe {
-        log.info "Cellpose results: $it"
+    cellpose_results.results.subscribe { result ->
+        log.info "Cellpose results: $result"
     }
 
 }

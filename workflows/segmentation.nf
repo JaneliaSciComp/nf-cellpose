@@ -28,7 +28,7 @@ workflow SEGMENTATION {
     if (params.cellpose_model) {
         if (params.cellpose_model.startsWith('/')) {
             // model is set using an absolute path
-            def full_model_path = file(cellpose_model)
+            def full_model_path = file(params.cellpose_model)
             model_dir = full_model_path.parent
             model_name = full_model_path.name
             log.info("Use model ${model_name} located at: ${model_dir}, derived from: ${params.cellpose_model}")
@@ -38,7 +38,7 @@ workflow SEGMENTATION {
             log.info("Use model ${model_name} that will be downloaded to ${model_dir}")
         }
     } else {
-        model_dir = params.cellpose_mnodels_dir ? file(params.cellpose_models_dir) : file("${params.workdir}/cellpose_models")
+        model_dir = params.cellpose_models_dir ? file(params.cellpose_models_dir) : file("${params.workdir}/cellpose_models")
         model_name = ''
         log.info("Use default model that will be downloaded to ${model_dir}")
     }
@@ -111,14 +111,14 @@ workflow SEGMENTATION {
 
     def cellpose_inputs = dask_cluster
     | combine(ch_data_inputs, by:0)
-    | multiMap {
+    | multiMap { row ->
         def (cellpose_meta,
              dask_info,
              input_container,
              input_subpath,
              cellpose_output_dir,
              labels_container,
-             labels_subpath) = it
+             labels_subpath) = row
 
         def cellpose_data = [
             cellpose_meta,
@@ -137,7 +137,7 @@ workflow SEGMENTATION {
             params.dask_config ? file(params.dask_config) : [],
         ]
 
-        log.info "Cellpose inputs: $it -> (${cellpose_data}, ${cellpose_cluster})"
+        log.info "Cellpose inputs: $row -> (${cellpose_data}, ${cellpose_cluster})"
 
         cellpose_data:    cellpose_data
         cellpose_cluster: cellpose_cluster
@@ -153,20 +153,20 @@ workflow SEGMENTATION {
     )
 
     def cellpose_results = cellpose_outputs.results
-    cellpose_results.subscribe {
-        log.debug "Cellpose results: $it"
+    cellpose_results.subscribe { result ->
+        log.debug "Cellpose results: $result"
     }
 
     // append cellpose version
     ch_versions = ch_versions.concat (cellpose_outputs.versions)
 
     def multiscale_inputs = cellpose_results
-    | flatMap {
+    | flatMap { row ->
         def (cellpose_meta,
-             input_container, input_subpath,
-             labels_containers, labels_subpath) = it
+             _input_container, _input_subpath,
+             labels_containers, labels_subpath) = row
         labels_containers.split('\n')
-        .findAll { it }
+        .findAll { lc -> lc }
         .collect { labels_container ->
             def r = [
                 cellpose_meta, labels_container, labels_subpath,
@@ -196,9 +196,9 @@ workflow SEGMENTATION {
     // stop the dask cluster
     dask_cluster
     | join(all_multiscale_results, by:0)
-    | map {
-        def (cluster_meta, cluster_context) = it
-        log.debug "Prepare to stop the dask cluster -> $it"
+    | map { row ->
+        def (cluster_meta, cluster_context) = row
+        log.debug "Prepare to stop the dask cluster -> $row"
         [ cluster_meta, cluster_context ]
     }
     | DASK_STOP

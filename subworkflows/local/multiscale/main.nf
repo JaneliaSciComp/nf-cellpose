@@ -19,7 +19,7 @@ workflow MULTISCALE {
     def multiscale_version
     if (skip_flag) {
         multiscale_results = ch_meta
-        multiscale_results.subscribe { log.debug "Skip multiscale pyramid: $it" }
+        multiscale_results.subscribe { result -> log.debug "Skip multiscale pyramid: $result" }
         multiscale_version = channel.empty()
     } else {
         MULTISCALE_PYRAMID(
@@ -29,7 +29,7 @@ workflow MULTISCALE {
             mem_gb,
         )
         multiscale_results = MULTISCALE_PYRAMID.out.data
-        multiscale_results.subscribe { log.debug "Multiscale pyramid: $it" }
+        multiscale_results.subscribe { result -> log.debug "Multiscale pyramid: $result" }
         multiscale_version = MULTISCALE_PYRAMID.out.versions
     }
 

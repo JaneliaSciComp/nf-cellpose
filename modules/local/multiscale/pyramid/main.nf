@@ -11,7 +11,7 @@ process MULTISCALE_PYRAMID {
     val(multiscale_mem_gb)
 
     output:
-    tuple val(meta), env(full_data_container_path), val(dataset_subpath), emit: data
+    tuple val(meta), env('full_data_container_path'), val(dataset_subpath), emit: data
     path "versions.yml"                                                 , emit: versions
 
     when:
