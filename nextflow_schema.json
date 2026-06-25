@@ -26,6 +26,14 @@
                     "type": "string",
                     "description": "Specifies the input dataset if the input is a ZARR/N5/HDF5 container"
                 },
+                "input_mask": {
+                    "type": "string",
+                    "description": "Optional mask container restricting segmentation to masked regions of the input. When empty no mask is used."
+                },
+                "input_mask_subpath": {
+                    "type": "string",
+                    "description": "Specifies the mask dataset within input_mask if it is a ZARR/N5/HDF5 container."
+                },
                 "outdir": {
                     "type": "string",
                     "format": "directory-path",
@@ -168,6 +176,10 @@
                     "description": "Comma delimited list of 0-based channels used for segmentation.",
                     "default": "1"
                 },
+                "roi": {
+                    "type": "string",
+                    "description": "Restrict segmentation to a region of interest within the input (maps to --roi). When empty the whole input is processed."
+                },
                 "process_blocksize": {
                     "type": "string",
                     "description": "Define spatial block partitioning for distributing the work to a Dask cluster. Even for 4 or 5-dimensional arrays this only needs to specify the block partitioning in the 3D spatial dimensions only",
@@ -250,6 +262,15 @@
                     "description": "Preprocessing YAML config  file.  This contains preprocessing steps configuration.",
                     "hidden": true
                 },
+                "run_cellposemasks": {
+                    "type": "boolean",
+                    "description": "If true run the cellpose model evaluation otherwise it will reuse the labels output from a prior run (only valid if the eval has been run before)."
+                },
+                "no_cellposemaskmerge": {
+                    "type": "boolean",
+                    "description": "If true pass --skip-merge-labels to distributed cellpose, skipping internal label merging",
+                    "fa_icon": "fas fa-toggle-on"
+                },
                 "verbose": {
                     "type": "boolean",
                     "description": "Log verbosity"
@@ -264,15 +285,75 @@
                 }
             }
         },
+        "zarr_options": {
+            "title": "Zarr output options",
+            "type": "object",
+            "description": "Options controlling how Zarr output containers are written (format, chunking, sharding, compression).",
+            "default": "",
+            "properties": {
+                "zarr_format": {
+                    "type": ["integer", "string"],
+                    "default": 3,
+                    "description": "Zarr format version used for output containers (e.g. 2 or 3)."
+                },
+                "zarr_chunksize": {
+                    "type": "string",
+                    "default": "64,64,64",
+                    "description": "Output Zarr chunk size as a comma-separated list (maps to --output-blocksize)."
+                },
+                "zarr_sharding_factor": {
+                    "type": "string",
+                    "default": "4,4,4",
+                    "description": "Output Zarr sharding factor as a comma-separated list (maps to --sharding-factor). Only used with Zarr format 3."
+                },
+                "zarr_compression": {
+                    "type": "string",
+                    "default": "zstd",
+                    "description": "Compressor used for output Zarr arrays (maps to --compressor), e.g. zstd, blosc, gzip."
+                },
+                "zarr_compression_opts": {
+                    "type": "string",
+                    "default": "'{\"level\": 5}'",
+                    "description": "Compressor options as a JSON string (maps to --compressor-opts), e.g. '{\"level\": 5}'."
+                }
+            }
+        },
+        "merge_labels_options": {
+            "title": "Merge labels options",
+            "type": "object",
+            "description": "Options for the distributed merge-labels step that runs after cellpose segmentation.",
+            "default": "",
+            "properties": {
+                "run_mergelabels": {
+                    "type": "boolean",
+                    "description": "If true run the distributed merge-labels step. By default merge-labels in the same process as cellpose segmentation right after mask generation."
+                },
+                "mergelabels_distance_th": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "Distance threshold (--label-distance-threshold) for the standalone distributed merge-labels step."
+                },
+                "mergelabels_cpus": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "Number of cpus for the merge-labels driver process."
+                },
+                "mergelabels_mem_gb": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Memory resource in GB for the merge-labels driver process."
+                }
+            }
+        },
         "multiscale_options": {
             "title": "Multiscale options",
             "type": "object",
             "description": "",
             "default": "",
             "properties": {
-                "skip_multiscale": {
+                "run_multiscale": {
                     "type": "boolean",
-                    "description": "If true skip generating multiscale pyramid for segmented images"
+                    "description": "If true run generating multiscale pyramid for segmented images"
                 },
                 "multiscale_cpus": {
                     "type": "integer",
@@ -354,6 +435,24 @@
             "description": "Less common options for the pipeline, typically set in a config file.",
             "help_text": "These options are common to all nf-core pipelines and allow you to customise some of the core preferences for how the pipeline runs.\n\nTypically these options would be set in a Nextflow config file loaded for all pipeline runs, such as `~/.nextflow/config`.",
             "properties": {
+                "help": {
+                    "type": "boolean",
+                    "description": "Display help text.",
+                    "fa_icon": "fas fa-question-circle",
+                    "hidden": true
+                },
+                "help_full": {
+                    "type": "boolean",
+                    "description": "Display full help text.",
+                    "fa_icon": "fas fa-question-circle",
+                    "hidden": true
+                },
+                "show_hidden": {
+                    "type": "boolean",
+                    "description": "Display all hidden parameters.",
+                    "fa_icon": "fas fa-question-circle",
+                    "hidden": true
+                },
                 "version": {
                     "type": "boolean",
                     "description": "Display version and exit.",
@@ -423,6 +522,21 @@
                     "description": "Default memory for CPU core. This could be used to computed the required memory if only the CPUs are specified.",
                     "default": 15,
                     "hidden": true
+                },
+                "user_id": {
+                    "type": "string",
+                    "description": "User running docker/podman container. It defaults to the current user's id",
+                    "hidden": true
+                },
+                "group_id": {
+                    "type": "string",
+                    "description": "Group running docker/podman container. It defaults to the current user's id",
+                    "hidden": true
+                },
+                "singularity_cache_dir": {
+                    "type": "string",
+                    "description": "Singularity container cache directory",
+                    "hidden": true
                 }
             }
         }
@@ -436,6 +550,12 @@
         },
         {
             "$ref": "#/$defs/segmentation_options"
+        },
+        {
+            "$ref": "#/$defs/zarr_options"
+        },
+        {
+            "$ref": "#/$defs/merge_labels_options"
         },
         {
             "$ref": "#/$defs/multiscale_options"

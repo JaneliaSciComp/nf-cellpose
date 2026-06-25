@@ -1,18 +1,15 @@
-process MULTISCALE_PYRAMID {
-    tag       { meta.id }
-    container { task.ext.container ?: 'ghcr.io/janeliascicomp/zarr-tools:dask2025.11.0-py12-ol9' }
-    cpus      { multiscale_cpus }
-    memory    { "${multiscale_mem_gb} GB" }
+process OMEZARRTOOLS_MULTISCALE {
+    tag "${meta.id}"
+    container 'ghcr.io/janeliascicomp/zarr-tools:0.3.1-dask2025.11.0-py12-ol9'
+    label 'process_single'
 
     input:
     tuple val(meta), path(data_container), val(dataset_subpath)
     tuple val(dask_scheduler), path(dask_config) // this is optional - if undefined pass in as empty list ([])
-    val(multiscale_cpus)
-    val(multiscale_mem_gb)
 
     output:
     tuple val(meta), env('full_data_container_path'), val(dataset_subpath), emit: data
-    path "versions.yml"                                                 , emit: versions
+    path "versions.yml"                                                   , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -24,7 +21,7 @@ process MULTISCALE_PYRAMID {
     def dask_config_arg = dask_config ? "--dask-config ${dask_config}" : ''
     """
     # Create command line parameters
-    full_data_container_path=\$(readlink ${data_container})
+    full_data_container_path=\$(readlink -e ${data_container})
     echo "Generate pyramid for \${full_data_container_path}:${dataset_subpath}"
     CMD=(
         python -m zarr_tools.cli.main_multiscale
