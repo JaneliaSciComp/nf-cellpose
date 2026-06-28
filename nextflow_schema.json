@@ -236,8 +236,13 @@
                     "description": "cellpose flow3D_smooth parameter",
                     "default": 1
                 },
+                "niter": {
+                    "type": ["integer", "string"],
+                    "description": "cellpose niter parameter (number of iterations for dynamics; 0 = auto)",
+                    "default": 0
+                },
                 "cell_diameter": {
-                    "type": "integer",
+                    "type": ["integer", "string"],
                     "description": "cell diameter",
                     "default": 0
                 },
