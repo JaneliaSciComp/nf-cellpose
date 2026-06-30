@@ -56,9 +56,9 @@ workflow SEGMENTATION {
         params.with_dask,
         params.dask_config,
         file("${params.workdir}/dask-work/${workflow.sessionId}"),
-        params.dask_workers,
-        params.dask_min_workers,
-        params.dask_worker_cpus,
+        (params.dask_workers as int),
+        (params.dask_min_workers as int),
+        (params.dask_worker_cpus as int),
         (params.dask_worker_mem_gb as int) > 0
             ? (params.dask_worker_mem_gb as int)
             : (params.default_mem_gb_per_cpu as int) * (params.dask_worker_cpus as int),
