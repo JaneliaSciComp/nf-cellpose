@@ -195,7 +195,7 @@
                     "description": "Blocks overlap used for distributed processing"
                 },
                 "gpu_device": {
-                    "type": "string",
+                    "type": ["integer", "string"],
                     "description": "which gpu device to use"
                 },
                 "do_3D": {
