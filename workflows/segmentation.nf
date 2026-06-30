@@ -3,16 +3,16 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { paramsSummaryMap       } from 'plugin/nf-schema'
-include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { paramsSummaryMap                 } from 'plugin/nf-schema'
+include { softwareVersionsToYAML           } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 
 include { COLLECT_INPUTS                   } from '../modules/local/collect_inputs'
 include { SEGTOOLS_DISTRIBUTED_CELLPOSE    } from '../modules/janelia/segtools/distributed/cellpose/main'
 include { SEGTOOLS_DISTRIBUTED_MERGELABELS } from '../modules/janelia/segtools/distributed/mergelabels/main'
 
-include { DASK_START             } from '../subworkflows/janelia/dask_start'
-include { DASK_STOP              } from '../subworkflows/janelia/dask_stop'
-include { MULTISCALE             } from '../subworkflows/janelia/multiscale'
+include { DASK_START                       } from '../subworkflows/janelia/dask_start'
+include { DASK_STOP                        } from '../subworkflows/janelia/dask_stop'
+include { MULTISCALE                       } from '../subworkflows/janelia/multiscale'
 
 workflow SEGMENTATION {
 
@@ -159,8 +159,6 @@ workflow SEGMENTATION {
             ch_cellpose_inputs.cellpose_cluster,
             params.preprocessing_config ? file(params.preprocessing_config) : [],
             params.cellpose_log_config ? file(params.cellpose_log_config) : [],
-            params.cellpose_cpus,
-            params.cellpose_mem_gb > 0 ? params.cellpose_mem_gb : params.default_mem_gb_per_cpu * params.cellpose_cpus,
         )
         ch_versions = ch_versions.concat(cellpose_outputs.versions)
         ch_labels = cellpose_outputs.results
@@ -219,8 +217,6 @@ workflow SEGMENTATION {
             mergelabels_inputs.map { pair -> pair[0] },
             mergelabels_inputs.map { pair -> pair[1] },
             params.cellpose_log_config ? file(params.cellpose_log_config) : [],
-            params.mergelabels_cpus,
-            params.mergelabels_mem_gb > 0 ? params.mergelabels_mem_gb : params.default_mem_gb_per_cpu * params.mergelabels_cpus,
         )
         ch_versions = ch_versions.concat(ch_mergelabels_outputs.versions)
 
