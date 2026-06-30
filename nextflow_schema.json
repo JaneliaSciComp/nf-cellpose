@@ -280,11 +280,11 @@
                     "type": "boolean",
                     "description": "Log verbosity"
                 },
-                "headjob_runtime_opts": {
+                "cellpose_runtime_opts": {
                     "type": "string",
-                    "description": "Cellpose head job container runtime options. When cellpose is not distributed on a Dask cluster - it requires GPU."
+                    "description": "Cellpose head job container runtime options. When cellpose is not distributed on a Dask cluster - it requires GPU so it may need '--nv' flag is singularity is used."
                 },
-                "headjob_cluster_opts": {
+                "cellpose_cluster_opts": {
                     "type": "string",
                     "description": "Cellpose head job cluster options. When cellpose is not distributed on a Dask cluster - the job needs to be dispatched on a GPU node."
                 }

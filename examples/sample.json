@@ -9,8 +9,8 @@
 
     "cellpose_model": "${HOME}/.cellpose/models/cpsam",
     "cellpose_cpus": 1,
-    "headjob_runtime_opts": "",
-    "headjob_cluster_opts": "",
+    "cellpose_runtime_opts": "",
+    "cellpose_cluster_opts": "",
 
     "input_channels": "",
     "z_axis": "",
