@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Zarr v3 support
 - Conda configuration - allows one to run the pipeline using a conda profile
 
+### `Changed`
+- The pipeline requires Nextflow 25.10.0 because of updated nf-schema plugin
+
+### `Dependencies`
+- Nextflow 25.10.0
+
 ## v1.0.0 - 2025-09-08
 
 Initial release of JaneliaSciComp/nf-cellpose, created with the [nf-core](https://nf-co.re/) template.
