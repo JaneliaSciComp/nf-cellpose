@@ -33,6 +33,14 @@ nextflow run JaneliaSciComp/nf-cellpose \
    --outdir <OUTDIR>
 ```
 
+To run with conda:
+```bash
+nextflow run JaneliaSciComp/nf-cellpose \
+   -profile conda -with-conda conf/conda-env.yml \
+   --input input.ome.zarr \
+   --outdir <OUTDIR>
+```
+
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option; an example of such file is available [here](examples/segtest_sample.json). Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
 
