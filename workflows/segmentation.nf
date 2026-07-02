@@ -3,15 +3,16 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { paramsSummaryMap       } from 'plugin/nf-schema'
-include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { paramsSummaryMap                 } from 'plugin/nf-schema'
+include { softwareVersionsToYAML           } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 
-include { COLLECT_INPUTS         } from '../modules/local/collect_inputs'
-include { CELLPOSE               } from '../modules/janelia/cellpose/main'
+include { COLLECT_INPUTS                   } from '../modules/local/collect_inputs'
+include { SEGTOOLS_DISTRIBUTED_CELLPOSE    } from '../modules/janelia/segtools/distributed/cellpose/main'
+include { SEGTOOLS_DISTRIBUTED_MERGELABELS } from '../modules/janelia/segtools/distributed/mergelabels/main'
 
-include { DASK_START             } from '../subworkflows/janelia/dask_start/main'
-include { DASK_STOP              } from '../subworkflows/janelia/dask_stop/main'
-include { MULTISCALE             } from '../subworkflows/local/multiscale/main'
+include { DASK_START                       } from '../subworkflows/janelia/dask_start'
+include { DASK_STOP                        } from '../subworkflows/janelia/dask_stop'
+include { MULTISCALE                       } from '../subworkflows/janelia/multiscale'
 
 workflow SEGMENTATION {
 
@@ -28,17 +29,17 @@ workflow SEGMENTATION {
     if (params.cellpose_model) {
         if (params.cellpose_model.startsWith('/')) {
             // model is set using an absolute path
-            def full_model_path = file(cellpose_model)
+            def full_model_path = file(params.cellpose_model)
             model_dir = full_model_path.parent
             model_name = full_model_path.name
-            log.info("Use model ${model_name} located at: ${model_dir}, derived from: ${params.cellpose_model}")
+            log.info("Use model ${model_name} located at: ${model_dir} (${params.cellpose_model})")
         } else {
             model_dir = params.cellpose_models_dir ? file(params.cellpose_models_dir) : file("${params.workdir}/cellpose_models")
             model_name = params.cellpose_model
-            log.info("Use model ${model_name} that will be downloaded to ${model_dir}")
+            log.info("Use model ${model_name} (${params.cellpose_model}) that will be downloaded to ${model_dir}")
         }
     } else {
-        model_dir = params.cellpose_mnodels_dir ? file(params.cellpose_models_dir) : file("${params.workdir}/cellpose_models")
+        model_dir = params.cellpose_models_dir ? file(params.cellpose_models_dir) : file("${params.workdir}/cellpose_models")
         model_name = ''
         log.info("Use default model that will be downloaded to ${model_dir}")
     }
@@ -50,15 +51,17 @@ workflow SEGMENTATION {
         model_dir,
     ]
 
-    def dask_cluster = DASK_START(
+    def ch_dask_cluster = DASK_START(
         channel.of([meta, dask_data]),
         params.with_dask,
         params.dask_config,
         file("${params.workdir}/dask-work/${workflow.sessionId}"),
-        params.dask_workers,
-        params.dask_min_workers,
-        params.dask_worker_cpus,
-        params.dask_worker_mem_gb > 0  ? params.dask_worker_mem_gb : params.default_mem_gb_per_cpu * params.dask_worker_cpus,
+        (params.dask_workers as int),
+        (params.dask_min_workers as int),
+        (params.dask_worker_cpus as int),
+        (params.dask_worker_mem_gb as int) > 0
+            ? (params.dask_worker_mem_gb as int)
+            : (params.default_mem_gb_per_cpu as int) * (params.dask_worker_cpus as int),
     )
 
     def ch_data_inputs = channel.of([file(params.input), params.input_pattern])
@@ -109,21 +112,23 @@ workflow SEGMENTATION {
             r
         }
 
-    def cellpose_inputs = dask_cluster
+    def ch_cellpose_inputs = ch_dask_cluster
     | combine(ch_data_inputs, by:0)
-    | multiMap {
+    | multiMap { row ->
         def (cellpose_meta,
              dask_info,
              input_container,
              input_subpath,
              cellpose_output_dir,
              labels_container,
-             labels_subpath) = it
+             labels_subpath) = row
 
         def cellpose_data = [
             cellpose_meta,
             input_container,
             input_subpath,
+            params.input_mask ? file(params.input_mask) : [],
+            params.input_mask_subpath,
             model_dir,
             model_name,
             cellpose_output_dir,
@@ -137,73 +142,142 @@ workflow SEGMENTATION {
             params.dask_config ? file(params.dask_config) : [],
         ]
 
-        log.info "Cellpose inputs: $it -> (${cellpose_data}, ${cellpose_cluster})"
+        log.info "Cellpose inputs: $row -> (${cellpose_data}, ${cellpose_cluster})"
 
         cellpose_data:    cellpose_data
         cellpose_cluster: cellpose_cluster
     }
 
-    def cellpose_outputs = CELLPOSE(
-        cellpose_inputs.cellpose_data,
-        cellpose_inputs.cellpose_cluster,
-        params.preprocessing_config ? file(params.preprocessing_config) : [],
-        params.cellpose_log_config ? file(params.cellpose_log_config) : [],
-        params.cellpose_cpus,
-        params.cellpose_mem_gb > 0 ? params.cellpose_mem_gb : params.default_mem_gb_per_cpu * params.cellpose_cpus,
-    )
-
-    def cellpose_results = cellpose_outputs.results
-    cellpose_results.subscribe {
-        log.debug "Cellpose results: $it"
-    }
-
-    // append cellpose version
-    ch_versions = ch_versions.concat (cellpose_outputs.versions)
-
-    def multiscale_inputs = cellpose_results
-    | flatMap {
-        def (cellpose_meta,
-             input_container, input_subpath,
-             labels_containers, labels_subpath) = it
-        labels_containers.split('\n')
-        .findAll { it }
-        .collect { labels_container ->
-            def r = [
-                cellpose_meta, labels_container, labels_subpath,
-            ]
-            log.info "Multiscale inputs: $r"
-            r
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Cellpose model evaluation (or reuse a prior run's output)
+    // ch_labels shape: [ meta, image, image_subpath, labels_containers(\n-joined), labels_subpath ]
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def ch_labels
+    if (params.run_cellposemasks) {
+        def cellpose_outputs = SEGTOOLS_DISTRIBUTED_CELLPOSE(
+            ch_cellpose_inputs.cellpose_data,
+            ch_cellpose_inputs.cellpose_cluster,
+            params.preprocessing_config ? file(params.preprocessing_config) : [],
+            params.cellpose_log_config ? file(params.cellpose_log_config) : [],
+        )
+        ch_versions = ch_versions.concat(cellpose_outputs.versions)
+        ch_labels = cellpose_outputs.results
+        ch_labels.subscribe { result -> log.debug "Cellpose results: $result" }
+    } else {
+        // reuse an existing segmentation output (requires a prior successful eval)
+        ch_labels = ch_cellpose_inputs.cellpose_data
+        | map { cp_row ->
+            def (sk_meta, image, image_subpath,
+                 _mask, _mask_subpath,
+                 _models_dir, _model_name,
+                 output_dir, labels_container, labels_subpath,
+                 _working_dir) = cp_row
+            def existing_labels = "${output_dir}/${labels_container}"
+            log.debug "run_cellposemasks=false: reusing existing labels ${existing_labels}"
+            [ sk_meta, image, image_subpath, existing_labels, labels_subpath ?: image_subpath ]
         }
     }
 
-    // the dask_info used for multiscale will be the same as the one used for cellpose
-    // this is acceptable now because for now there's only going to a single dask cluster
-    def multiscale_outputs = MULTISCALE(
-        multiscale_inputs,
-        cellpose_inputs.cellpose_cluster, // this can be questionable here but there's a single dask cluster
-        params.skip_multiscale,
-        params.multiscale_cpus,
-        params.multiscale_mem_gb  > 0 ? params.multiscale_mem_gb : params.default_mem_gb_per_cpu * params.multiscale_cpus,
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Optionally merge labels across blocks (distributed).
+    // ch_segmentation_results shape (per labels container): [ meta, labels_container, labels_subpath ]
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def ch_segmentation_results
+    if (params.run_mergelabels) {
+        def mergelabels_inputs = ch_labels
+        | combine(ch_dask_cluster, by: 0)
+        | flatMap { row ->
+            def (ml_meta,
+                 _image, _image_subpath,
+                 labels_containers, labels_subpath,
+                 dask_info) = row
+            labels_containers.split('\n')
+            .findAll { lc -> lc }
+            .collect { labels_container ->
+                def ml_data = [
+                    ml_meta,
+                    file(labels_container),
+                    labels_subpath,
+                    [],   // mask
+                    '',   // mask_subpath
+                    [],   // output_labels => in-place (overwrite input container)
+                    labels_subpath,   // output_subpath
+                    file("${params.workdir}/cellpose-work/${workflow.sessionId}"),
+                ]
+                def ml_cluster = [
+                    dask_info ? dask_info.scheduler_address : '',
+                    params.dask_config ? file(params.dask_config) : [],
+                ]
+                log.info "Merge labels input: ${ml_data} on ${ml_cluster}"
+                [ ml_data, ml_cluster ]
+            }
+        }
+
+        def ch_mergelabels_outputs = SEGTOOLS_DISTRIBUTED_MERGELABELS(
+            mergelabels_inputs.map { pair -> pair[0] },
+            mergelabels_inputs.map { pair -> pair[1] },
+            params.cellpose_log_config ? file(params.cellpose_log_config) : [],
+        )
+        ch_versions = ch_versions.concat(ch_mergelabels_outputs.versions)
+
+        // ml.results: [ meta, input_labels_fullpath, input_subpath, output_labels_fullpath, output_subpath ]
+        ch_segmentation_results = ch_mergelabels_outputs.results
+        | map { ml_row ->
+            def (sr_meta, _in_labels, _in_subpath, out_labels, out_subpath) = ml_row
+            [ sr_meta, out_labels, out_subpath ]
+        }
+    } else {
+        ch_segmentation_results = ch_labels
+        | flatMap { row ->
+            def (sr_meta,
+                 _image, _image_subpath,
+                 labels_containers, labels_subpath) = row
+            labels_containers.split('\n')
+            .findAll { lc -> lc }
+            .collect { labels_container ->
+                [ sr_meta, labels_container, labels_subpath ]
+            }
+        }
+    }
+
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Multiscale pyramid for the segmentation results (per labels container),
+    // attaching the dask cluster info per item.
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def ch_multiscale_inputs = ch_segmentation_results
+    | combine(ch_dask_cluster, by: 0)
+    | map { row ->
+        def (ms_meta, labels_container, labels_subpath, dask_info) = row
+        def ms_data = [ ms_meta, labels_container, labels_subpath ]
+        def ms_cluster = [
+            dask_info ? dask_info.scheduler_address : '',
+            params.dask_config ? file(params.dask_config) : [],
+        ]
+        log.info "Multiscale inputs: ${ms_data} on ${ms_cluster}"
+        [ ms_data, ms_cluster ]
+    }
+
+    def ch_multiscale_outputs = MULTISCALE(
+        ch_multiscale_inputs.map { pair -> pair[0] },
+        ch_multiscale_inputs.map { pair -> pair[1] },
+        params.run_multiscale,
     )
 
     // wait until all multiscale finish - this is still needed in case multiple inputs are being segmented
-    def all_multiscale_results = multiscale_outputs.results
+    def ch_all_multiscale_results = ch_multiscale_outputs
     | groupTuple(by:0)
 
-    // append multiscale version
-    ch_versions = ch_versions.concat (multiscale_outputs.versions)
-
     // stop the dask cluster
-    dask_cluster
-    | join(all_multiscale_results, by:0)
-    | map {
-        def (cluster_meta, cluster_context) = it
-        log.debug "Prepare to stop the dask cluster -> $it"
+    ch_dask_cluster
+    | join(ch_all_multiscale_results, by:0)
+    | map { row ->
+        def (cluster_meta, cluster_context) = row
+        log.debug "Prepare to stop the dask cluster -> $row"
         [ cluster_meta, cluster_context ]
     }
     | DASK_STOP
 
     emit:
-    results  = multiscale_outputs.results
+    results  = ch_multiscale_outputs
     versions = ch_versions     // channel: [ path(versions.yml) ]
 }

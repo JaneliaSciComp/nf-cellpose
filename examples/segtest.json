@@ -7,10 +7,8 @@
     "with_dask": true,
     "process_blocksize": "128,128,128",
 
-    "cellpose_model": "${HOME}/.cellpose/models/cpsam",
+    "cellpose_model": "cpsam",
     "cellpose_cpus": 1,
-    "cellpose_runtime_opts": "",
-    "cellpose_cluster_opts": "",
 
     "input_channels": "1",
     "z_axis": "1",

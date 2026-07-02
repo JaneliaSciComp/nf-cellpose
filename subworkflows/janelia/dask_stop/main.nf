@@ -1,12 +1,12 @@
 process DASK_TERMINATE {
     label 'process_single'
-    container { task.ext.container ?: 'ghcr.io/janeliascicomp/dask:2024.12.1-py11-ol9' }
+    container 'ghcr.io/janeliascicomp/dask:2024.12.1-py11-ol9'
 
     input:
     tuple val(meta), path(cluster_work_dir, stageAs: 'dask_work/*')
 
     output:
-    tuple val(meta), env(cluster_work_fullpath)
+    tuple val(meta), env('cluster_work_fullpath')
 
     when:
     task.ext.when == null || task.ext.when
@@ -15,10 +15,20 @@ process DASK_TERMINATE {
     def cluster_work_path = cluster_work_dir
     def terminate_file_name = "${cluster_work_path}/terminate-dask"
     """
-    cluster_work_fullpath=\$(readlink ${cluster_work_dir})
+    case \$(uname) in
+        Darwin)
+            detected_os=OSX
+            READLINK_TOOL="greadlink"
+            ;;
+        *)
+            detected_os=Linux
+            READLINK_TOOL="readlink"
+            ;;
+    esac
+    cluster_work_fullpath=\$(\${READLINK_TOOL} ${cluster_work_dir})
 
     echo "\$(date): Terminate DASK Scheduler: ${cluster_work_path}"
-    echo $PWD
+    echo \$PWD
     cat > ${terminate_file_name} <<EOF
     \$(date)
     DONE
@@ -33,8 +43,8 @@ workflow DASK_STOP {
     meta_and_context     // channel: [val(meta), dask_context]
 
     main:
-    def cluster_info = meta_and_context 
-    | filter { meta, dask_context ->
+    def cluster_info = meta_and_context
+    | filter { _meta, dask_context ->
         // only terminate the clusters that have a work dir
         dask_context.cluster_work_dir
     }
