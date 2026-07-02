@@ -26,7 +26,7 @@
                 "janelia": {
                     "dask_start": {
                         "branch": "main",
-                        "git_sha": "5aa2842272d09c14af63a5fd0c5f7890749c6b4d",
+                        "git_sha": "492bccec34f3d6560d529df7fa0629db05e17720",
                         "installed_by": ["subworkflows"]
                     },
                     "dask_stop": {
