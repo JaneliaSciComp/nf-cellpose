@@ -1,4 +1,3 @@
-.claude
 .nextflow*
 work/
 data/
@@ -8,4 +7,6 @@ testing/
 testing*
 *.pyc
 null/
+.lineage/
+.claude
 mylocal

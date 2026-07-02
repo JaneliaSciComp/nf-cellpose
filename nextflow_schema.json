@@ -144,7 +144,7 @@
                 "anisotropy": {
                     "type": "number",
                     "description": "Data anisotropy. If this is not provided - it will be computed from voxel spacing.",
-                    "default": 1
+                    "default": 0
                 },
                 "voxel_spacing": {
                     "type": "string",
@@ -173,8 +173,7 @@
                 },
                 "input_channels": {
                     "type": ["string", "integer"],
-                    "description": "Comma delimited list of 0-based channels used for segmentation.",
-                    "default": "1"
+                    "description": "Comma delimited list of 0-based channels used for segmentation."
                 },
                 "roi": {
                     "type": "string",
@@ -183,7 +182,7 @@
                 "process_blocksize": {
                     "type": "string",
                     "description": "Define spatial block partitioning for distributing the work to a Dask cluster. Even for 4 or 5-dimensional arrays this only needs to specify the block partitioning in the 3D spatial dimensions only",
-                    "default": "128,128,128"
+                    "default": "256,256,256"
                 },
                 "local_workers": {
                     "type": "integer",
@@ -222,12 +221,12 @@
                     "default": "1 99"
                 },
                 "stitch_threshold": {
-                    "type": "integer",
+                    "type": "number",
                     "description": "cellpose stitch_threshold parameter",
                     "default": 0
                 },
                 "cellprob_threshold": {
-                    "type": "integer",
+                    "type": "number",
                     "description": "cellpose cellprob_threshold parameter",
                     "default": 1
                 },
@@ -243,8 +242,7 @@
                 },
                 "cell_diameter": {
                     "type": ["integer", "string"],
-                    "description": "cell diameter",
-                    "default": 0
+                    "description": "cell diameter"
                 },
                 "min_size": {
                     "type": "integer",

@@ -1,6 +1,6 @@
 repository_type: pipeline
 
-nf_core_version: 3.3.2
+nf_core_version: 4.0.2
 
 lint:
   files_unchanged:
@@ -20,8 +20,16 @@ lint:
     - validation.help.afterText
     - validation.summary.beforeText
     - validation.summary.afterText
-  multiqc_config:
-    - report_comment
+    - config_defaults:
+        # value contains single quotes that Nextflow escapes and the linter cannot round-trip
+        - params.zarr_compression_opts
+        # resolves to a machine-specific absolute path via ${projectDir}
+        - params.dask_config
+  # this pipeline does not produce a MultiQC report
+  multiqc_config: false
+  # only subworkflows (no modules) are installed from nf-core/modules, which trips
+  # the linter's requirement that every repo entry have a "modules" key
+  modules_json: false
   files_exist:
     - CODE_OF_CONDUCT.md
     - assets/nf-core-nf-cellpose_logo_light.png
@@ -33,7 +41,7 @@ lint:
 
 template:
   org: JaneliaSciComp
-  name: nf-cellpose
+  name: nf_cellpose
   description: Cellpose segmentation pipeline
   author: Cristian Goina
   version: 1.0.0dev
