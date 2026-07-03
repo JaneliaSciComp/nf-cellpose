@@ -11,12 +11,12 @@
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 [![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/JaneliaSciComp/nf-cellpose)
 
+
 ## Introduction
 
 **JaneliaSciComp/nf-cellpose** is a pipeline that runs Cellpose segmentation on a Dask cluster.
 
 The pipeline generates the image segmentation using [Cellpose](https://github.com/MouseLand/cellpose). Large images can be partitioned into smaller blocks and processed on a distributed Dask cluster. The input can be a single (Tiff) image file or single (OME-ZARR) image container, or a directory containing multiple input files or containers that need to be segmented. In the latter case when multiple inputs need to be segmented, the user must also provide an input pattern, used for selecting the images. The pipeline output is the Cellpose result saved as a Tiff or an OME-ZARR (depending on the input) at the location specified by the `outdir` parameter. For OME-ZARR, there's also an option to generate the multiscale pyramid for the labels image.
-
 
 
 ## Usage
@@ -44,6 +44,7 @@ nextflow run JaneliaSciComp/nf-cellpose \
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option; an example of such file is available [here](examples/segtest_sample.json). Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
 
+
 ## Credits
 
 [Cellpose-SAM](https://github.com/MouseLand/cellpose) used in this pipeline was developed by Marius Pachitariu, Michael Rariden and Carsen Stringer
@@ -58,6 +59,7 @@ We thank the following people for their extensive assistance in the development 
 ## Contributions and Support
 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
+
 
 ## Citations
 
