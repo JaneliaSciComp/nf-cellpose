@@ -12,12 +12,12 @@
                     },
                     "segtools/distributed/cellpose": {
                         "branch": "main",
-                        "git_sha": "6e2c7cfb8ac03d57757baa9432f387e7460788d7",
+                        "git_sha": "28f97782cfcf2d9a3fd89372632d4fd81cfa1996",
                         "installed_by": ["modules"]
                     },
                     "segtools/distributed/mergelabels": {
                         "branch": "main",
-                        "git_sha": "6e2c7cfb8ac03d57757baa9432f387e7460788d7",
+                        "git_sha": "28f97782cfcf2d9a3fd89372632d4fd81cfa1996",
                         "installed_by": ["modules"]
                     }
                 }
