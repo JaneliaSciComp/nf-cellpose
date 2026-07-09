@@ -1,8 +1,10 @@
-# JaneliaSciComp/nf-cellpose pipeline flow
+# Distributed Cellpose Pipeline
 
-The `SEGMENTATION` workflow (see `workflows/segmentation.nf`) runs Cellpose
-segmentation, optionally on a distributed Dask cluster, with an optional label
-merge step.
+The pipeline was built using [nf-core](https://github.com/nf-core) and is available at https://github.com/JaneliaSciComp/nf-cellpose
+
+The purpose was to be able to run Cellpose for large volumes. This is done by partitioning the volume into smaller blocks and running [Cellpose](https://github.com/mouseland/cellpose) eval distributed on a Dask cluster. The python code for this is available at https://github.com/JaneliaSciComp/cellpose-tools.
+
+
 
 ```mermaid
 flowchart TD
