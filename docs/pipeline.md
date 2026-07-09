@@ -6,14 +6,15 @@ merge step.
 
 ```mermaid
 flowchart TD
-    start --> dask
-    start -. "skip dask cluster" .-> eval
-    dask["Start Dask cluster"] --> eval["Eval model"]
-    eval --> merge["Merge labels"]
-    eval -. "skip merge" .-> done([Segmentation results])
-    merge --> done
+    input[Collect Input] -- params.with_dask --> start_dask[Start Dask Cluster]
+    start_dask --> eval[Cellpose Eval]
+    input -.-> eval
+    eval -- params.run_mergelabels --> merge[Merge Labels]
+    merge --> multiscale[Multiscale]
+    eval -.-> multiscale
 ```
 
-- **Start Dask cluster** — optional (`params.with_dask`); when disabled, work runs without a distributed cluster.
+
+- **Start Dask** — optional (`params.with_dask`); when disabled, work runs without a distributed cluster.
 - **Eval Cellpose model** — runs the blockwise Cellpose model evaluation to produce labels masks.
 - **Merge labels** — merges labels across blocks; the `skip merge` arrow bypasses it (`params.run_mergelabels = false`).

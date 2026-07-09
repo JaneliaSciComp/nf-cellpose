@@ -3,9 +3,6 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { paramsSummaryMap                 } from 'plugin/nf-schema'
-include { softwareVersionsToYAML           } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-
 include { COLLECT_INPUTS                   } from '../modules/local/collect_inputs'
 include { SEGTOOLS_DISTRIBUTED_CELLPOSE    } from '../modules/janelia/segtools/distributed/cellpose/main'
 include { SEGTOOLS_DISTRIBUTED_MERGELABELS } from '../modules/janelia/segtools/distributed/mergelabels/main'
@@ -153,7 +150,7 @@ workflow SEGMENTATION {
     // ch_labels shape: [ meta, image, image_subpath, labels_containers(\n-joined), labels_subpath ]
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def ch_labels
-    if (params.run_cellposemasks) {
+    if (Boolean.valueOf(params.run_cellposemasks)) {
         def cellpose_outputs = SEGTOOLS_DISTRIBUTED_CELLPOSE(
             ch_cellpose_inputs.cellpose_data,
             ch_cellpose_inputs.cellpose_cluster,
@@ -183,7 +180,7 @@ workflow SEGMENTATION {
     // ch_segmentation_results shape (per labels container): [ meta, labels_container, labels_subpath ]
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def ch_segmentation_results
-    if (params.run_mergelabels) {
+    if (Boolean.valueOf(params.run_mergelabels)) {
         def mergelabels_inputs = ch_labels
         | combine(ch_dask_cluster, by: 0)
         | flatMap { row ->
@@ -260,7 +257,7 @@ workflow SEGMENTATION {
     def ch_multiscale_outputs = MULTISCALE(
         ch_multiscale_inputs.map { pair -> pair[0] },
         ch_multiscale_inputs.map { pair -> pair[1] },
-        params.run_multiscale,
+        Boolean.valueOf(params.run_multiscale),
     )
 
     // wait until all multiscale finish - this is still needed in case multiple inputs are being segmented
