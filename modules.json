@@ -12,7 +12,7 @@
                     },
                     "segtools/distributed/cellpose": {
                         "branch": "main",
-                        "git_sha": "9f77e3dfa9702442106c68b96e222f07888133a0",
+                        "git_sha": "6d4130284de93110cbd6e5d18a29b3acce2a33e1",
                         "installed_by": ["modules"]
                     },
                     "segtools/distributed/mergelabels": {
